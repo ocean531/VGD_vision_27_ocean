@@ -22,6 +22,7 @@ public:
   ArmorPriority priority;
   bool jumped;
   int last_id;  // debug only
+  bool rlh_init = 0;
 
   Target() = default;
   Target(

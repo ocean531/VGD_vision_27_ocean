@@ -48,7 +48,8 @@ public:
     const Eigen::VectorXd & z,const Eigen::MatrixXd & R,int id,
     std::function<Eigen::MatrixXd(const Eigen::VectorXd & x,int id)>h_jacobian,
     std::function<Eigen::VectorXd(const Eigen::VectorXd &)> h,
-    std::function<Eigen::VectorXd(const Eigen::VectorXd &, const Eigen::VectorXd &)> z_subtract);
+    std::function<Eigen::VectorXd(const Eigen::VectorXd &, const Eigen::VectorXd &)> z_subtract,
+    int armor_num , bool rlh_init);
 
 
   std::map<std::string, double> data;  //卡方检验数据

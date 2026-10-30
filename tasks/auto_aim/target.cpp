@@ -91,6 +91,13 @@ void Target::predict(double dt)
   };
   // clang-format on
 
+  //爱来自老学长，可以防止误差转移时相互干扰
+  if(this->name == ArmorName::outpost){
+    F(4 , 5) = 0.0;
+    F(5 , 5) = 0.0;
+  };
+
+
   // Piecewise White Noise Model
   // https://github.com/rlabbe/Kalman-and-Bayesian-Filters-in-Python/blob/master/07-Kalman-Filter-Math.ipynb
   double v1, v2;
@@ -120,6 +127,11 @@ void Target::predict(double dt)
     {     0,      0,      0,      0,      0,      0,      0,      0, 0, 0, 0}
   };
   // clang-format on
+
+   if (armor_num_ == 3) {
+    Q(9, 9)   =  1e-4;
+    Q(10, 10) =  1e-4;
+  };
 
   // 防止夹角求和出现异常值
   auto f = [&](const Eigen::VectorXd & x) -> Eigen::VectorXd {
@@ -172,6 +184,7 @@ void Target::update(const Armor & armor)
 
   if (id != last_id) {
     is_switch_ = true;
+    rlh_init = true;
   } else {
     is_switch_ = false;
   }
@@ -224,7 +237,7 @@ void Target::update_ypda(const Armor & armor, int id)
   Eigen::VectorXd z{{ypd[0], ypd[1], ypd[2], ypr[0]}};  //获得观测量
 
 
-  ekf_.I_update(z , R , id , h_jacobian_func , h ,z_subtract);
+  ekf_.I_update(z , R , id , h_jacobian_func , h , z_subtract , this->armor_num_ , this->rlh_init);
 }
 
 Eigen::VectorXd Target::ekf_x() const { return ekf_.x; }
@@ -278,6 +291,16 @@ Eigen::Vector3d Target::h_armor_xyz(const Eigen::VectorXd & x, int id) const
   auto armor_x = x[0] - r * std::cos(angle);
   auto armor_y = x[2] - r * std::sin(angle);
   auto armor_z = (use_l_h) ? x[4] + x[10] : x[4];
+
+  //前哨站高度差计算方法
+  if (this->name == ArmorName::outpost){
+    if (id == 1){
+      armor_z = x[4] + x[9];
+    };
+    if (id == 2){
+      armor_z = x[4] + x[9] + x[10];
+    };
+  };
 
   return {armor_x, armor_y, armor_z};
 }

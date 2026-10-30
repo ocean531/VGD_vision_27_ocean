@@ -94,7 +94,8 @@ Eigen::VectorXd ExtendedKalmanFilter::I_update(
   const Eigen::VectorXd & z,const Eigen::MatrixXd & R,int id,
   std::function<Eigen::MatrixXd(const Eigen::VectorXd & x,int id)>h_jacobian,
   std::function<Eigen::VectorXd(const Eigen::VectorXd &)> h,
-  std::function<Eigen::VectorXd(const Eigen::VectorXd &, const Eigen::VectorXd &)> z_subtract )
+  std::function<Eigen::VectorXd(const Eigen::VectorXd &, const Eigen::VectorXd &)> z_subtract , 
+  int armor_num , bool rlh_init)
   {
     Eigen::VectorXd x_prior = x; 
     Eigen::MatrixXd P_prior = P;      //保存先验值
@@ -106,6 +107,15 @@ Eigen::VectorXd ExtendedKalmanFilter::I_update(
     for(int i = 0 ; i<3 ; i++){
     //迭代求解观测雅可比
     Eigen::MatrixXd H_i = h_jacobian(x_final, id);
+    
+    if(armor_num == 3){
+      H_i.block<3,1>(0,6).setZero();
+    };
+
+    if(!rlh_init){
+      H_i.block<4,3>(0,8).setZero();
+    };
+
     Eigen::VectorXd z_i = h(x_final);
     //更新K
     Eigen::MatrixXd S = H_i * P_prior * H_i.transpose() + R;
