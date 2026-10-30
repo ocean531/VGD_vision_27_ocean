@@ -107,13 +107,13 @@ Eigen::VectorXd ExtendedKalmanFilter::I_update(
     for(int i = 0 ; i<3 ; i++){
     //迭代求解观测雅可比
     Eigen::MatrixXd H_i = h_jacobian(x_final, id);
-    
+
     if(armor_num == 3){
       H_i.block<3,1>(0,6).setZero();
-    };
-
-    if(!rlh_init){
-      H_i.block<4,3>(0,8).setZero();
+    
+      if(!rlh_init){
+        H_i.block<4,3>(0,8).setZero();
+      };
     };
 
     Eigen::VectorXd z_i = h(x_final);
